@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="untilarraysproject/untilarraysproject.vcxproj" Id="8a40b50c-8470-4a9d-9637-9860c0feab71" />
+</Solution>
