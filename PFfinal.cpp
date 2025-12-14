@@ -5,13 +5,10 @@
 #include <fstream>
 #include <sstream>
 
-// removed <vector> as requested
-
 #pragma comment(lib, "ws2_32.lib")
 
 using namespace std;
 
-// ========== COLORS ==========
 const int WHITE = 7;
 const int GREEN = 10;
 const int CYAN = 11;
@@ -19,18 +16,14 @@ const int RED = 12;
 const int MAGENTA = 13;
 const int YELLOW = 14;
 
-// ========== STRUCTURES ==========
 struct Client {
     SOCKET socket;
     string username;
     bool isLoggedIn;
 };
 
-// ========== GLOBAL VARIABLES ==========
 Client clients[100];
 int clientCount = 0;
-
-// ========== HELPER FUNCTIONS ==========
 
 void SetColor(int color) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -39,13 +32,11 @@ void SetColor(int color) {
 
 void DrawBanner() {
     SetColor(CYAN);
-    cout << "===========================================\n";
-    cout << "      S U P E R   C H A T   v 2 . 0        \n";
-    cout << "===========================================\n";
+    cout << "========================================================\n";
+    cout << "      S U P E R   C H A T   A P P L I C A T I O N       \n";
+    cout << "========================================================\n";
     SetColor(WHITE);
 }
-
-// --- FILE HANDLING: USER AUTH ---
 
 bool RegisterUser(string user, string pass) {
     ifstream checkFile("users.txt");
@@ -73,9 +64,6 @@ bool LoginUser(string user, string pass) {
     return false;
 }
 
-// --- FILE HANDLING: CHAT HISTORY ---
-
-// 1. Save a message to the text file
 void LogMessage(string msg) {
     ofstream historyFile("chat_history.txt", ios::app);
     if (historyFile.is_open()) {
@@ -84,19 +72,15 @@ void LogMessage(string msg) {
     }
 }
 
-// 2. Read the text file and send lines to the new user
 void SendHistory(SOCKET s) {
     ifstream historyFile("chat_history.txt");
     string line;
     while (getline(historyFile, line)) {
-        // Send existing lines to the user so they can catch up
         send(s, line.c_str(), line.length(), 0);
-        Sleep(10); // Small delay to prevent packet merging
+        Sleep(10); 
     }
     historyFile.close();
 }
-
-// ========== SERVER FUNCTIONS ==========
 
 DWORD WINAPI ClientHandler(LPVOID param) {
     long long id_long = (long long)param;
@@ -106,7 +90,6 @@ DWORD WINAPI ClientHandler(LPVOID param) {
     char buffer[1024];
     string currentName = "";
 
-    // --- AUTHENTICATION PHASE ---
     while (true) {
         memset(buffer, 0, 1024);
         int bytes = recv(mySock, buffer, 1024, 0);
@@ -129,7 +112,6 @@ DWORD WINAPI ClientHandler(LPVOID param) {
                     clients[id].isLoggedIn = true;
                     cout << "User Logged In: " << currentName << endl;
                     
-                    // NEW: Send them the chat history from file!
                     SendHistory(mySock);
                     
                     break;
@@ -151,7 +133,6 @@ DWORD WINAPI ClientHandler(LPVOID param) {
         }
     }
 
-    // --- CHAT PHASE ---
     while (true) {
         memset(buffer, 0, 1024);
         int bytes = recv(mySock, buffer, 1024, 0);
@@ -186,11 +167,9 @@ DWORD WINAPI ClientHandler(LPVOID param) {
             }
         }
         else {
-            // Public Broadcast
             string message = currentName + ": " + msg;
             cout << message << endl;
 
-            // NEW: Log this public message to file
             LogMessage(message);
 
             for (int i = 0; i < clientCount; i++) {
@@ -231,8 +210,6 @@ void RunServer() {
     }
 }
 
-// ========== CLIENT FUNCTIONS ==========
-
 DWORD WINAPI Receiver(LPVOID param) {
     SOCKET s = (SOCKET)param;
     char buffer[1024];
@@ -242,7 +219,6 @@ DWORD WINAPI Receiver(LPVOID param) {
         if (bytes > 0) {
             string msg = string(buffer);
             
-            // COLOR LOGIC based on message content
             if (msg.find("[Private") == 0) {
                 SetColor(MAGENTA);
                 cout << "\r" << msg << endl; 
@@ -270,7 +246,6 @@ void RunClient() {
     WSAStartup(MAKEWORD(2, 2), &wsa);
     SOCKET clientSocket = socket(AF_INET, SOCK_STREAM, 0);
     
-    // --- CONNECT SCREEN ---
     system("cls"); 
     DrawBanner();
     
@@ -292,7 +267,6 @@ void RunClient() {
         return;
     }
 
-    // --- AUTHENTICATION UI ---
     bool authenticated = false;
     while (!authenticated) {
         system("cls");
@@ -338,7 +312,6 @@ void RunClient() {
         }
     }
 
-    // --- CHAT UI ---
     system("cls");
     DrawBanner();
     SetColor(GREEN);
@@ -378,3 +351,4 @@ int main() {
 
     return 0;
 }
+
