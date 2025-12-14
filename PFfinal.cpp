@@ -315,7 +315,7 @@ void RunClient() {
     system("cls");
     DrawBanner();
     SetColor(GREEN);
-    cout << "Connected as " << "\n";
+    cout << "Connected" << "\n";
     SetColor(WHITE);
     cout << "-------------------------------------------\n";
     cout << "Typing text broadcasts to everyone.\n";
@@ -351,4 +351,5 @@ int main() {
 
     return 0;
 }
+
 
