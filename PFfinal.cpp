@@ -25,6 +25,44 @@ struct Client {
 Client clients[100];
 int clientCount = 0;
 
+// UI & Helper Functions
+void SetColor(int color);
+void DrawBanner();
+
+bool RegisterUser(string user, string pass);
+bool LoginUser(string user, string pass);
+void LogMessage(string msg);
+void SendHistory(SOCKET s);
+
+DWORD WINAPI ClientHandler(LPVOID param);
+void RunServer();
+
+DWORD WINAPI Receiver(LPVOID param);
+void RunClient();
+
+int main() {
+    SetColor(WHITE); 
+    system("cls");
+    
+    cout << "=========================================================\n";
+    cout << "      S U P E R   C H A T   A P P L I C A T I O N        \n";
+    cout << "=========================================================\n";
+    cout << "1. Run Server\n";
+    cout << "2. Run Client\n";
+    cout << "Choice: ";
+    
+    int choice;
+    cin >> choice;
+
+    if (choice == 1) {
+        RunServer();
+    } else {
+        RunClient();
+    }
+
+    return 0;
+}
+
 void SetColor(int color) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hConsole, color);
@@ -32,9 +70,9 @@ void SetColor(int color) {
 
 void DrawBanner() {
     SetColor(CYAN);
-    cout << "========================================================\n";
-    cout << "      S U P E R   C H A T   A P P L I C A T I O N       \n";
-    cout << "========================================================\n";
+    cout << "=========================================================\n";
+    cout << "      S U P E R   C H A T   A P P L I C A T I O N        \n";
+    cout << "=========================================================\n";
     SetColor(WHITE);
 }
 
@@ -77,7 +115,7 @@ void SendHistory(SOCKET s) {
     string line;
     while (getline(historyFile, line)) {
         send(s, line.c_str(), line.length(), 0);
-        Sleep(10); 
+        Sleep(10); // Prevent packet merging
     }
     historyFile.close();
 }
@@ -113,7 +151,6 @@ DWORD WINAPI ClientHandler(LPVOID param) {
                     cout << "User Logged In: " << currentName << endl;
                     
                     SendHistory(mySock);
-                    
                     break;
                 } else {
                     string response = "#FAIL Invalid credentials";
@@ -140,11 +177,9 @@ DWORD WINAPI ClientHandler(LPVOID param) {
 
         string msg(buffer);
         
-        // Check if message starts with '/'
         if (msg.size() > 1 && msg[0] == '/') {
             stringstream ss(msg);
             string tempTarget, content;
-
             ss >> tempTarget; 
             string target = tempTarget.substr(1);
             getline(ss, content); 
@@ -169,7 +204,6 @@ DWORD WINAPI ClientHandler(LPVOID param) {
         else {
             string message = currentName + ": " + msg;
             cout << message << endl;
-
             LogMessage(message);
 
             for (int i = 0; i < clientCount; i++) {
@@ -315,7 +349,7 @@ void RunClient() {
     system("cls");
     DrawBanner();
     SetColor(GREEN);
-    cout << "Connected" << "\n";
+    cout << "Connected!\n";
     SetColor(WHITE);
     cout << "-------------------------------------------\n";
     cout << "Typing text broadcasts to everyone.\n";
@@ -335,21 +369,3 @@ void RunClient() {
         cout << "> ";
     }
 }
-
-int main() {
-    SetColor(WHITE); 
-    system("cls");
-    
-    cout << "1. Run Server\n";
-    cout << "2. Run Client\n";
-    cout << "Choice: ";
-    int choice;
-    cin >> choice;
-
-    if (choice == 1) RunServer();
-    else RunClient();
-
-    return 0;
-}
-
-
